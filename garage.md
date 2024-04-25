@@ -13,8 +13,8 @@ Garages.Private = {
     {
         name = "Vinewood Garage",
         price = 10000,
-        vehiclesPlaces = {
-            -- positions of vehicles, let's assume we have 10 places here
+        vehiclePositions = {
+            -- Assume there are 10 positions available for vehicles
             vector4(x, y, z, w),
             vector4(x, y, z, w),
             vector4(x, y, z, w),
@@ -30,16 +30,16 @@ Garages.Private = {
             ["cargobob"] = true,
             ["police1"] = true
         },
-        blackScreenTime = 10, -- in seconds, how much time the player is in blackscreen before going in/out of the garage
-        timerInvite = 15, -- in seconds, the time the player needs to say yes or no to accept the invite
-        friendlyfire = false, -- enable friendly fire or not
-        menuGarage = {
-            enable = true,
+        blackScreenDuration = 10, -- in seconds, duration of the black screen when entering/exiting the garage
+        invitationTimer = 15, -- in seconds, the time allotted for the player to accept or reject the invitation
+        friendlyFireEnabled = false, -- toggles friendly fire on or off
+        menuOptions = {
+            enabled = true,
             position = vector3(x, y, z),
         },
-        garageEnter = vector3(x, y, z), -- enter of the garage
-        insideGarage = vector3(x, y, z), -- inside of the garage (when on foot)
-        leaveGarage = vector4(x, y, z, w), -- when leaving the garage with a vehicle or at foot
+        garageEntrance = vector3(x, y, z), -- location of the garage entrance
+        insideGarage = vector3(x, y, z), -- position inside the garage when on foot
+        garageExit = vector4(x, y, z, w), -- exit point from the garage with a vehicle or on foot
     }
 }
 ```
@@ -54,16 +54,19 @@ Garages = {}
 
 Garages.Public = {
     {
-        name = "Parking Central",
+        name = "Central Parking",
         price = 0,
-        vehiclesPlaces = 5,
+        vehicleCapacity = 5,
         blacklistedVehicles = {
             ["cargobob"] = true,
             ["police1"] = true
         },
-        limitVehicleOut = 1, -- the player can only out of the garage 1 vehicle
-        NPCSpawn = vector4(x, y, z, w), -- where does the NPC going to spawn
-        coordsSpawn = vector4(x, y, z, w), -- where does the vehicle going to spawn?
+        vehicleExitLimit = 1, -- a player can only take out one vehicle at a time
+        purchasePosition = vector3(x, y, z), -- location where the player can buy the garage (indicated by a marker)
+        garageMenuPosition = vector3(x, y, z), -- location where the player needs to go to access the menu for viewing and selecting stored vehicles
+        markerSettings = {}, -- settings for the garage marker
+        vehicleSpawnPosition = vector4(x, y, z, w), -- location where the vehicle will spawn
+        vehicleStoragePosition = vector3(x, y, z) -- location where the player needs to go to store the vehicle (close to the spawn position)
     }
 }
 ```
@@ -75,10 +78,9 @@ Garages = {}
 
 Garages.Jobs = {
     {
-        garageType = "private", -- the garage going to be into a IPL
+        garageType = "private", -- the garage is part of an IPL
         name = "LSPD Garage",
-        vehiclesPlaces = {
-         -- positions of vehicles, let's assume we have 10 places here
+        vehiclePositions = { -- positions for up to 10 vehicles
             vector4(x, y, z, w),
             vector4(x, y, z, w),
             vector4(x, y, z, w),
@@ -94,37 +96,42 @@ Garages.Jobs = {
             ["adder"] = true,
             ["t20"] = true
         },
-        blackScreenTime = 10, -- in seconds, how much time the player is in blackscreen before going in/out of the garage
-        timerInvite = 15, -- in seconds, the time the player needs to say yes or no to accept the invite
-        friendlyfire = false -- enable friendly fire or not
-        menuGarage = {
-            enable = true,
+        blackScreenDuration = 10, -- in seconds, duration of black screen while entering/exiting the garage
+        invitationTimer = 15, -- in seconds, time to accept or decline the garage invitation
+        friendlyFireEnabled = false, -- toggle for friendly fire
+        menuOptions = {
+            enabled = true,
             position = vector3(x, y, z),
         },
-        garageEnter = vector3(x, y, z), -- enter of the garage
-        insideGarage = vector3(x, y, z), -- inside of the garage (when on foot)
-        leaveGarage = vector4(x, y, z, w), -- when leaving the garage with a vehicle or at foot
-        jobAuthorized = {
+        garageEntrance = vector3(x, y, z), -- entrance to the garage
+        insideGarage = vector3(x, y, z), -- inside the garage (on foot)
+        garageExit = vector4(x, y, z, w), -- exit from the garage with a vehicle or on foot
+        authorizedJobs = {
             ["police"] = true,
             ["sheriff"] = true,
         },
     },
     {
-        garageType = "public"
-        name = "Governement Garage",
+        garageType = "public",
+        name = "Government Garage",
         price = 0,
-        vehiclesPlaces = 5,
+        vehicleCapacity = 5,
         blacklistedVehicles = {
             ["adder"] = true,
             ["t20"] = true
         },
-        jobsAuthorized = {
+        authorizedJobs = {
             ["government"] = true,
             ["justice"] = true
-        }
-        limitVehicleOut = 1, -- the player can only out of the garage 1 vehicle
-        NPCSpawn = vector4(x, y, z, w), -- where does the NPC going to spawn
-        coordsSpawn = vector4(x, y, z, w), -- where does the vehicle going to spawn?
+        },
+        vehicleExitLimit = 1, -- a player can only take out one vehicle at a time
+        npcSpawnPosition = vector4(x, y, z, w), -- spawn location for the NPC
+        vehicleSpawnPosition = vector4(x, y, z, w), -- spawn location for vehicles
     }
 }
 ```
+
+**Edited**
+To buy a private garage, you need to create an NPC. When interacting with this NPC and right-clicking on it, you must add an option with ox_target labeled "Buy a garage." Using ox_lib <a href="https://overextended.dev/ox_lib/Modules/Interface/Client/menu">menus</a>, you should open a menu displaying all the private garages available for purchase, including their prices. The name of each button should be the name of the garage. Whenever the player selects a button, you need to create/set a camera inside the specific garage's interior. If the player does not have enough money, you must display a notification.
+
+To buy a public garage, simply visit the designated public garage. For instance, in the example configuration, I've placed a position where you can buy the garage, which should be indicated by a marker. By pressing 'E' at this marker, you can purchase the garage. Afterwards, you can use it by going to the garage position and opening it by pressing 'E'. This will open a menu showing all vehicles stored in your garages. If you select 'enter' on a vehicle, it will spawn with the player inside, and the vehicle will no longer be stored in the garage. Same logic for 
